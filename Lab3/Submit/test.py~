@@ -1,0 +1,3 @@
+tester = "animesh venkat mangu"
+words = text.split()
+print words

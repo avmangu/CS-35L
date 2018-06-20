@@ -1,0 +1,231 @@
+NAME: Animesh Mangu
+UID: 804-771-005
+TA: Guangyu Zhou
+
+Laboratory 8 Log: Dynamic Linking
+
+The primary purpose of this laboratory was find out about which programs are
+linked to which libraries.
+
+In the first step of this laboratory, I was required to compile, build and run a
+trivial program in C on the SEASnet GNU/Linux servers. The program need to
+compute cos(sqrt(3.0)) and print it using the printf format "%.17g". This was
+the implementation of my trivial program (trivial.c):
+
+#include <math.h>
+#include <stdio.h>
+
+int main() {
+  printf("%.17f\n", cos(sqrt(3.0)));
+}
+
+Once the code was run and confirmed with a calculator to print the intended
+result, I compiled it into an executable using the command gcc -o trivial
+trivial.c and proceeded onto step 2 to run the "ldd" command on my code to see
+which dynamic libraries were used. The following was printed:
+
+linux-vdso.so.1 =>  (0x00007ffd21711000)
+libc.so.6 => /lib64/libc.so.6 (0x00007fbc0c357000)
+/lib64/ld-linux-x86-64.so.2 (0x00007fbc0c724000)
+
+Next, I used the "strace" command to see which system calls my programs
+used. The following was printed:
+
+$ strace -c ./trivial
+% time     seconds  usecs/call     calls    errors syscall
+------ ----------- ----------- --------- --------- ----------------
+  0.00    0.000000           0         1           read
+  0.00    0.000000           0         1           write
+  0.00    0.000000           0         2           open
+  0.00    0.000000           0         2           close
+  0.00    0.000000           0         3           fstat
+
+  0.00    0.000000           0         8           mmap
+  0.00    0.000000           0         4           mprotect
+  0.00    0.000000           0         1           munmap
+  0.00    0.000000           0         1           brk
+  0.00    0.000000           0         1         1 access
+  0.00    0.000000           0         1           execve
+  0.00    0.000000           0         1           arch_prctl
+------ ----------- ----------- --------- --------- ----------------
+100.00    0.000000                    26         1 total
+
+The calls that are related to dynamic linking are likely:
+open - opens location of libraries on the system
+fstat - calculates size of the library to allocate to virtual memory
+mmap - create linking between library, .text, and .data memory areas
+read -  reads data from the ELF (Executable and Linkable Format)
+close - close the library after dynamic linking completed
+
+Once we finished step 3, we continued on to run the shell command:
+
+ls /usr/bin | awk 'NR%101==804771005%101'
+
+to get a list of two dozen or so commands to investigate. These were the
+outputted results:
+
+alsa-delay
+cancel.cups
+cpp
+dirname
+expand
+getent
+grub2-mkrelpath
+ht
+isodump
+kfmclient
+ld.gold
+lsusb
+msggrep
+nm
+pango-view
+pip2
+ps2pdf12
+reporter-ureport
+setterm
+states
+texconfig-dialog
+view
+xmag
+
+We invoked ldd on each command to investigate which dynamic library were used by
+each of the listed programs. The programs alsa-delay, ht, pip2, ps2pdf12, and
+texconfig-dialog all printed the error message "not a dynamic
+executable". Reasons for this message could potentially include that the
+executable could be static and not use dynamic libraries, the program could be a
+Perl or Bash script, or even that running the ldd command with a 32-bit binary
+on a 64-bit computer can sometimes produce errors.
+
+However, all the other commands produced results as to which dynamic libraries
+were used, and the output of each was directed to a textfile called library.txt
+using stdout. Many libraries were repeated across libraries, but the repeated
+lines couldn't be automatically separated since each was directed to a different
+memory address. Thus, in order to remove the duplicate lines, we first had to
+remove the memory addresses from each line of the textfile using the command: 
+
+sed ':again;$!N;$!b again; :b; s/([^()]*)//g; t b' library.txt > test.txt
+
+Once this was accomplished, we could sort and remove the duplicated dynamic
+libraries using the following command:
+
+sort test.txt | uniq -u > library.txt
+
+which appropriately yielded the proper output. Following is a sorted
+list of every dynamic library that is used by any of the commands on my list
+with omitted duplicates:
+
+libattica.so.0.4 => /lib64/libattica.so.0.4 
+libaudit.so.1 => /lib64/libaudit.so.1 
+libaugeas.so.0 => /lib64/libaugeas.so.0 
+libavahi-client.so.3 => /lib64/libavahi-client.so.3 
+libavahi-common.so.3 => /lib64/libavahi-common.so.3 
+libbfd-2.27-27.base.el7.so => /lib64/libbfd-2.27-27.base.el7.so 
+libcairo.so.2 => /lib64/libcairo.so.2 
+libcap-ng.so.0 => /lib64/libcap-ng.so.0 
+libcroco-0.6.so.3 => /lib64/libcroco-0.6.so.3 
+libcups.so.2 => /lib64/libcups.so.2 
+libcurl.so.4 => /lib64/libcurl.so.4 
+libdb-5.3.so => /lib64/libdb-5.3.so 
+libdbusmenu-qt.so.2 => /lib64/libdbusmenu-qt.so.2 
+libdevmapper.so.1.02 => /lib64/libdevmapper.so.1.02 
+libdrm.so.2 => /lib64/libdrm.so.2 
+libEGL.so.1 => /lib64/libEGL.so.1 
+libfam.so.0 => /lib64/libfam.so.0 
+libfa.so.1 => /lib64/libfa.so.1 
+libgbm.so.1 => /lib64/libgbm.so.1 
+libgettextlib-0.19.8.1.so => /lib64/libgettextlib-0.19.8.1.so 
+libgettextsrc-0.19.8.1.so => /lib64/libgettextsrc-0.19.8.1.so 
+libglapi.so.0 => /lib64/libglapi.so.0 
+libGL.so.1 => /lib64/libGL.so.1 
+libgomp.so.1 => /lib64/libgomp.so.1 
+libgraphite2.so.3 => /lib64/libgraphite2.so.3 
+libharfbuzz.so.0 => /lib64/libharfbuzz.so.0 
+libidn.so.11 => /lib64/libidn.so.11 
+libjson-c.so.2 => /lib64/libjson-c.so.2 
+libkdecore.so.5 => /lib64/libkdecore.so.5 
+libkdeinit4_kfmclient.so => /lib64/libkdeinit4_kfmclient.so 
+libkdeui.so.5 => /lib64/libkdeui.so.5 
+libkio.so.5 => /lib64/libkio.so.5 
+liblber-2.4.so.2 => /lib64/liblber-2.4.so.2 
+libldap-2.4.so.2 => /lib64/libldap-2.4.so.2 
+liblua-5.1.so => /lib64/liblua-5.1.so 
+libmodman.so.1 => /lib64/libmodman.so.1 
+libncurses.so.5 => /lib64/libncurses.so.5 
+libnepomukquery.so.4 => /lib64/libnepomukquery.so.4 
+libnepomuk.so.4 => /lib64/libnepomuk.so.4 
+libnepomukutils.so.4 => /lib64/libnepomukutils.so.4 
+libnspr4.so => /lib64/libnspr4.so 
+libnss3.so => /lib64/libnss3.so 
+libnssutil3.so => /lib64/libnssutil3.so 
+libpango-1.0.so.0 => /lib64/libpango-1.0.so.0 
+libpangocairo-1.0.so.0 => /lib64/libpangocairo-1.0.so.0 
+libpangoft2-1.0.so.0 => /lib64/libpangoft2-1.0.so.0 
+libpangoxft-1.0.so.0 => /lib64/libpangoxft-1.0.so.0 
+libpixman-1.so.0 => /lib64/libpixman-1.so.0 
+libplc4.so => /lib64/libplc4.so 
+libplds4.so => /lib64/libplds4.so 
+libpopt.so.0 => /lib64/libpopt.so.0 
+libproxy.so.1 => /lib64/libproxy.so.1 
+libqca.so.2 => /lib64/libqca.so.2 
+libQtCore.so.4 => /lib64/libQtCore.so.4 
+libQtDBus.so.4 => /lib64/libQtDBus.so.4 
+libQtGui.so.4 => /lib64/libQtGui.so.4 
+libQtNetwork.so.4 => /lib64/libQtNetwork.so.4 
+libQtSvg.so.4 => /lib64/libQtSvg.so.4 
+libQtXml.so.4 => /lib64/libQtXml.so.4 
+libreport.so.0 => /lib64/libreport.so.0 
+libreport-web.so.0 => /lib64/libreport-web.so.0 
+librols.so.0 => /lib64/librols.so.0 
+librpmio.so.3 => /lib64/librpmio.so.3 
+librpm.so.3 => /lib64/librpm.so.3 
+libsasl2.so.3 => /lib64/libsasl2.so.3 
+libsatyr.so.3 => /lib64/libsatyr.so.3 
+libsepol.so.1 => /lib64/libsepol.so.1 
+libsmime3.so => /lib64/libsmime3.so 
+libsolid.so.4 => /lib64/libsolid.so.4 
+libsopranoclient.so.1 => /lib64/libsopranoclient.so.1 
+libsoprano.so.4 => /lib64/libsoprano.so.4 
+libssh2.so.1 => /lib64/libssh2.so.1 
+libssl3.so => /lib64/libssl3.so 
+libstreamanalyzer.so.0 => /lib64/libstreamanalyzer.so.0 
+libstreams.so.0 => /lib64/libstreams.so.0 
+libtar.so.1 => /lib64/libtar.so.1 
+libthai.so.0 => /lib64/libthai.so.0 
+libunistring.so.0 => /lib64/libunistring.so.0 
+libusal.so.0 => /lib64/libusal.so.0 
+libusb-1.0.so.0 => /lib64/libusb-1.0.so.0 
+libwayland-client.so.0 => /lib64/libwayland-client.so.0 
+libwayland-server.so.0 => /lib64/libwayland-server.so.0 
+libX11-xcb.so.1 => /lib64/libX11-xcb.so.1 
+libXaw.so.7 => /lib64/libXaw.so.7 
+libxcb-dri2.so.0 => /lib64/libxcb-dri2.so.0 
+libxcb-dri3.so.0 => /lib64/libxcb-dri3.so.0 
+libxcb-glx.so.0 => /lib64/libxcb-glx.so.0 
+libxcb-present.so.0 => /lib64/libxcb-present.so.0 
+libxcb-render.so.0 => /lib64/libxcb-render.so.0 
+libxcb-shm.so.0 => /lib64/libxcb-shm.so.0 
+libxcb.so.1 => /lib64/libxcb.so.1 
+libxcb-sync.so.1 => /lib64/libxcb-sync.so.1 
+libxcb-xfixes.so.0 => /lib64/libxcb-xfixes.so.0 
+libXcursor.so.1 => /lib64/libXcursor.so.1 
+libXext.so.6 => /lib64/libXext.so.6 
+libXfixes.so.3 => /lib64/libXfixes.so.3 
+libXft.so.2 => /lib64/libXft.so.2 
+libXinerama.so.1 => /lib64/libXinerama.so.1 
+libXi.so.6 => /lib64/libXi.so.6 
+libxml2.so.2 => /lib64/libxml2.so.2 
+libxmlrpc_client.so.3 => /lib64/libxmlrpc_client.so.3 
+libxmlrpc.so.3 => /lib64/libxmlrpc.so.3 
+libxmlrpc_util.so.3 => /lib64/libxmlrpc_util.so.3 
+libXmu.so.6 => /lib64/libXmu.so.6 
+libXpm.so.4 => /lib64/libXpm.so.4 
+libXrandr.so.2 => /lib64/libXrandr.so.2 
+libXrender.so.1 => /lib64/libXrender.so.1 
+libxshmfence.so.1 => /lib64/libxshmfence.so.1 
+libXt.so.6 => /lib64/libXt.so.6 
+libXtst.so.6 => /lib64/libXtst.so.6 
+libXxf86vm.so.1 => /lib64/libXxf86vm.so.1 
+libz.so.1 => /lib64/libz.so.1 
+linux-vdso.so.1 
+
+The END!

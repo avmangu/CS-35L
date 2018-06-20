@@ -1,0 +1,28 @@
+NAME: Animesh Mangu
+UID: 804-771-005
+TA: Guangyu Zhou
+
+Homework 7 Questions
+
+1) Even if other teams had been observing all the bytes going across the network,
+the resulting network would still be secure. This is because all the bytes which
+were transferred would have been encrypted with the public key. The private key
+would never be publicly available or transferred over the network, thus
+eliminating the possibility of another team decrypting the bytes.If the other
+teams had also tapped our keyboards after we completed all client-server setup
+and had thereby obtained our team's keystrokes during later operation, then our
+network can still be considered secure. This is because after the client-server
+setup is completed, there is no need to type any sort of password. Our keys
+would have already been generated, and the only typed entries would be commands
+to ssh login into the host server. Finally, if we are booting off USB and assume
+the other teams temporarily had physical control of the USB, then our network
+could again be considered insecure. This is because they would have access to
+our private key, which is stored on a file in the .ssh folders. 
+
+2) The gpg2 --verify command in the following instructions doesn't really verify
+that you personally created the file in question. This is because it only checks
+that the signature is valid and that it matches up with the public key. To fix
+this problem, we can use our received public key to encrypt some file, send it
+to whoever we are trying to verify, and see if they can use their private key to
+decrypt the data. If they cannot decrypt the file, then they clearly didn't
+create the file in question.

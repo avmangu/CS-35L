@@ -1,0 +1,141 @@
+NAME: Animesh Mangu
+UID: 804-771-005
+TA: Guangyu Zhou
+
+Laboratory 6 Log: SSH Setup and Use in Applications
+
+1) To setup the BeagleBone board, I simply plugged the device into my laptop
+   running Linux, found the BeagleBone as an external storage device, and opened
+   the START.html file. Following the instructions, since my laptop was running
+   Linux, there was no driver installation necessary. Steps 1 and 2 were
+   automatically changed to green.
+
+2) Next, I SSH'd into my BeagleBone. After firing up terminal, I typed in:
+
+   $ sudo ssh debian@192.168.7.2
+
+   The default password for this debian account was "temppwd". After entering
+   the BeagleBone, I proceeded to connect it to wifi. To do this, I ran the
+   following commands in succession:
+
+   Start the connmanctl terminal:
+   $ sudo connmanctl
+
+   Turn on the wifi for your BeagleBone:
+   connmanctl> enable wifi
+
+   Scan all available wifi access points:
+   connmanctl> scan wifi
+
+   List all the discovered access points:
+   connmanctl> services
+
+   Register as the prospective client:
+
+   connmanctl> agent on
+   connmanctl> connect wifi_506583d4fc5e_544e434150413937414239_managed_psk
+   	       Passphrase? 3760ClassNet
+   connmanctl> quit
+
+3. After gaining Internet connection, I first updated the database using the
+   command:
+
+   sudo apt-get update
+
+   After this was completed, I needed to Install xauth and xvfb for X11
+   forwarding support for SSH connections to my BeagleBone:
+
+   sudo apt-get install xauth
+   sudo apt-get install xvfb
+   sudo apt-get update
+
+   Since I was running Ubuntu on my computer, I already had a built-in X11
+   client for forwarding. 
+
+4. After xauth and xvfb were installed, I needed to make sure that X11
+   forwarding was enabled on my BeagleBone. To do this, I entered into
+   /etc/ssh/ssh_config and /etc/ssh/sshd_config files and checked for the line
+   'X11Forwarding no' and changed it to 'X11Forwarding yes’. Additionally, I made
+   sure that /etc/ssh/sshd_config file contained 'ForwardAgent yes' and
+   'ForwardX11 yes' for the relevant hosts.
+
+5. Once of the last parts of the setup was to install Firefox, a web
+   browser with GUI support, in order to do the X11 forwarding part of the
+   assignment:
+
+   sudo apt-get install firefox-esr-l10n-en-gb
+
+   To ensure that firefox was working on my BeagleBone, I tried running the
+   command "firefox". After about 15 seconds a few errors, it fired up. 
+
+6. Next, it was time to complete the Client and Server steps of the lab. First,
+   I had to ensure that openssh-server and open-ssh client were installed from
+   the command:
+
+   dpkg --get-selections | grep openssh
+
+   Since this outputted:
+
+   openssh-client					install
+   openssh-server					install
+   openssh-sftp-server					install
+
+   I knew that the proper packages were already installed. 
+
+7. I completed the Client and Server steps with my partner Keegan Fowler. To
+   complete the Client part on my BeagleBone with the following steps:
+
+   Generate public and private keys and enter password
+   $ ssh-keygen
+     > mykey
+
+   Copy your public key to the server for key-based authentication
+   (~/.ssh/authorized_keys):
+   $ ssh-copy-id -i mykey.pub keegan@10.97.85.117
+
+   Add private key to authentication agent (ssh-agent)
+   $ eval "$(ssh-agent)"
+   $ ssh-add mykey
+
+   SSH to Keegan's server
+   $ ssh –X keegan@10.97.85.117
+
+   Run command on Keegan's BeagleBone to test
+   $ firefox
+   $ xterm
+
+   Since both programs opened as expected, we completed communication with my
+   BeagleBone as the client and his as the server.
+
+8. The final step of the lab was to switch role and complete the Server part
+   on my BeagleBone with the following steps: 
+
+   Generate public and private keys and enter password
+   $ ssh-keygen
+     > serverkey
+
+   Create account for Keegan's client BeaglBone on server
+   $ sudo useradd -d /home/animesh -m animesh
+   $ sudo passwd animesh
+
+   Create .ssh directory for new user "animesh"
+   $ cd /home/animesh
+   $ sudo mkdir .ssh
+
+   Change ownership and permission on .ssh directory
+   $ sudo chown -R username .ssh
+   $ sudo chmod 700 .ssh
+
+   Obtain ip address for Keegan to login to
+   $ ifconfig
+
+   After completing these steps, Keegan was able to succesfully complete the
+   same steps I did on his BeagleBone using the client. Everything worked as
+   expected.
+
+9. Lastly, I used Filezilla to extract the eeprom file from
+   /sys/bus/i2c/devices/0-0050. After running sudo apt-get update one last time
+   to update all the packages, I exited out of my BeagleBone. 
+
+The END!
+

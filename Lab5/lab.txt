@@ -1,0 +1,71 @@
+NAME: Animesh Mangu
+UID: 804-771-005
+TA: Guangyu Zhou
+
+Laboratory 5 Log: Buffered Versus Unbuffered I/O
+
+The primary purpose of this lab was to implement transliteration programs tr2b
+and tr2u that use buffered and unbuffer I/O respectively, and compare the
+resulting implementations and performance. The first thing I did was create and
+write the 2 C files: tr2b.c and tr2u.c. tr2b.c was the buffer I/O code, while
+the tr2u.c was the unbuffered I/O code. After both programs were created, the
+next step was to compile both files into exectuables. This was done using the
+following commands for both files: 
+
+gcc -std=c99 -o tr2b tr2b.c
+gcc -std=c99 -o tr2u tr2u.c
+
+Once both files were compiled, I needed to create a 5,000,000 byte text file
+somehow. While this can be achieved through running a simple loop in Python or
+C, I decided to use this simple terminal command:
+
+head --bytes=5000000 /dev/urandom > test.txt
+
+Once this 5,000,000 byte file was completed, both programs were ready for
+testing. For testing, we had to use the strace command to compare the system
+calls issued by the tr2b and tr2u commands (a) when copying one file to
+another, and (b) when copying a file to your terminal.
+
+For part (a), the following commands were use:
+
+strace -c ./tr2b 'a' 'b' < test.txt > output_b
+strace -c ./tr2u 'a' 'b' < test.txt > output_ub
+
+These commands produced wildly different results. The buffer I/O program
+(tr2b) yielded merely 30 systems calls. However, the unbuffered I/O (tr2u)
+took much longer, and yielded 10000024 system calls. This makes sense since
+the unbuffered I/O reads in bytes one at a time, thus using a higher number of
+system calls. To see how much how faster the buffer I/O program was than the
+unbuffered I/O program, we can use the time command:
+
+time strace -c ./tr2b 'a' 'b' < test.txt > output_b
+time strace -c ./tr2u 'a' 'b' < test.txt > output_ub
+
+As expected, this produced much faster results for tr2b than tr2u, with tr2b
+clocking a real time of 0.007s, and tr2u clocking in a real time of 5m19.160s. 
+
+Next, for part (b) we used the following commands:
+ 
+strace -c ./tr2b 'a' 'b' < test.txt 
+strace -c ./tr2u 'a' 'b' < test.txt
+
+These commands, as with part (a), also produced completely different
+results. The buffer I/O program (tr2b) yielded merely 31 systems calls. However,
+the unbuffered I/O (tr2u) took much longer, and yielded 10000024 system
+calls (same as last time). Once again, we can utilize the time command to see
+how much how faster the buffer I/O program was than the unbuffered I/O program
+in this part:
+
+time strace -c ./tr2b 'a' 'b' < test.txt 
+time strace -c ./tr2u 'a' 'b' < test.txt
+
+Just as in part (a), as expected, this produced much faster results for tr2b
+than for tr2u, with tr2b clocking a real time of 0.006s, and tr2u clocking in a
+real time of 4m8.824s.
+
+From these system call and time results, we can conclude that the getchar and
+putchar are much faster than simply using read and write, simply since they use
+buffered I/O rather than unbuffered I/O.
+
+The END!
+

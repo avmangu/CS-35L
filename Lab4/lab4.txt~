@@ -1,0 +1,114 @@
+NAME: Animesh Mangu
+UID: 804-771-005
+TA: Guangyu Zhou
+
+Laboratory 4 Log: Debugging a C Program
+
+The first thing I did was download and untar the tar file containing the
+outdated version of the coreutils, known as coreutils-with-bug. This was
+achieved using the tar -xzvf command and the was stored in a folder called
+coreutils-with-bug. 
+
+The next step was to configure, make, and make install the files inside the
+coreutils. However, I encountered the following error while attempting to
+configure the old coreutil files:
+
+In file included from utimecmp.c:41:0:
+utimens.h:2:5: error: conflicting types for 'futimens'.
+
+Just by analyzing the value from its description, it seemed that there may have
+been an undefined variable or function somewhere. From here, the next logical
+thing to do was to apply the renaming patch provided on the website. In the
+renaming patch, many of the old function names are reset to their new versions,
+making them up to date. To acquire the patch file, I used the command: wget
+https://web.cs.ucla.edu/classes/spring18/cs35L/assign/coreutils.diff. After
+downloading the file, the patch was moved into the coreutils-with-bugs
+folder. To run the actual patch I used the command: patch -p1 <
+coreutils.diff. Once this patch file was applied to all the necessary files, the
+problems were corrected. 
+
+Since the issues were eliminated, we can now retry the configuration process
+followed by making all the files. This time, I encountered no errors and the
+corrected version of the coreutils with the rename were saved into a directory
+named coreutils. The first thing I did was create 2 test files called file1 and
+file 2 in order to experiment with the corrected timestamp feature. For testing
+purposes, I gave both of the files very old dates using the touch -d '1918-11-11
+11:00 GMT' command taken from the specifications. Next I ran the command
+./bin/ls -lt to run the command from the old coreutils (rather than the default ls)
+command, and the files were clearly dated incorrectly. Rather than being way in
+the past as I had assigned using the touch command, the data which yielded from
+the running the coreutils ls -lt was several years in the future. From this, I
+could clearly see there was a bug to be addressed and fixed. 
+
+To fix this bug I had to use gdb. To run the debugger on the ls executable
+program inside the coreutils-with-bug folder, I had to cd into the src
+directory. For testing purposes, I once again created a file called file1.c inside
+the src directory and used the touch command to give it an old date. Next, I
+used the command: gdb --args ls -lt file1.c to run gdb on the ls command with specific
+arguments specified. To see all the functions in the program, we can use the
+info command to view the various names. Since our bug had to do with time, it
+seemed reasonable to set breakpoints at the functions with relevance to
+time and date.
+
+After looking through all the functions, I set breakpoints at
+compare_ctime, compare_atime, and compare_mtime. After looking through common
+lines, I decided to set a breakpoint at the line: func = sort_reverse ?
+rev_cmp_mtime : compare_mtime;, as the logical operators and statements seemed
+nearly identical to what we needed. Since this function was being used to
+compare the mtime and other times, I looked further using gdb and was led to
+the file timespec.h.
+
+Inside the timespec.h file was the following function:
+
+timespec_cmp (struct timespec a, struct timespec b)
+{
+  int diff = a.tv_sec - b.tv_sec;
+  return diff ? diff : a.tv_nsec - b.tv_nsec;
+}
+
+After closely analyzing this function, I was able to figure out the issue with
+the algorithm: overflow. Since time is shown on machines as a number of seconds
+(Epoch time), a simple subtraction would lead to many issues such as negative
+values. Epoch time is calculated from January 1, 1970, and a large difference
+between the 2 stored variables (a.tv_sec and b.tv_sec) could lead to
+overflow. Therefore, since the difference would be an absolute value without
+context of time, a date far in the past could be printed as a date far in the
+future. To fix this issue, we can simply rely on logical comparison operators
+rather than artihmetic. The 2 potential scenarios (b.tv_sec < a.tv_sec and
+b.tv_sec > a.tv_sec) will return either 1 or -1, and in the (somehow possible)
+case of anything else, 0 will be returned.
+
+Here is the implementation of the corrected version of the timespec_cmp:
+
+timespec_cmp (struct timespec a, struct timespec b)
+{
+   int diff = a.tv_sec - b.tv_sec;
+   return diff ? diff : a.tv_nsec - b.tv_nsec;
+
+   if (b.tv_sec < a.tv_sec)
+      return 1;   
+   else if (b.tv_sec > a.tv_sec)
+      return -1;
+   else
+      return 0;
+}
+
+Now that the corrections had been made, all I had to do was create the patch
+file. Since Emacs was giving me problems last lab with spacing corruption, I
+used vim to copy this code into a file called timespecpatch.h (with ChangeLog
+entry form). Finally, the command diff -u timespec.h timespecpatch.h > lab4.diff
+was used to generate our patch file.
+
+The last portion of the lab was to test my patch file on the SEASNET server. I
+changed my directory into one of my folders and randomly used the touch
+command to alter the date on one a sample file. When I used the command ls
+-lt on the SEASnet server, I noticed that the SEASnet server couldn't recognize
+the changes made and continued to return a date very much in the future.
+
+** FUN FACT: the reason behind the SEASnet behavior is that it utilizes a 32 bit
+   file system, leading to the sign bit being truncated. However, the
+   linux file system I was using is 64-bit, which includes a sign bit to
+   represent whether the time is in the future or in the past. Hence, the
+   SEASnet computers returned an inaccurate time way in the future.
+
+The END!

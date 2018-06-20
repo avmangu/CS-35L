@@ -1,0 +1,299 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+'''
+
+NAME: Animesh Mangu
+UID: 804-771-005
+TA: Guangyu Zhou
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+'''
+
+import random, sys
+import argparse
+from argparse import ArgumentParser
+
+# Python 2 -> Python 3
+try:
+   input = raw_input
+except NameError:
+   pass
+
+# User I/O
+def stdinput(num):
+    try:
+        word_list = list()
+        text = input()
+        word_list.append(str(text))
+        while(len(text) >= 0):
+            text = input()
+            word_list.append(str(text))
+    except EOFError:
+        for x in range(num):
+            sys.stdout.write(random.choice(word_list) + "\n")
+        sys.exit(0)
+
+# File I/O
+def fileShuffle(filename, num):
+    f = open(filename, 'r')
+    lines = f.readlines()
+    f.close()
+
+    for index in range(num):
+        sys.stdout.write(random.choice(lines))
+
+def main():
+    version_msg = "shuf.py 2.0"
+    usage_msg = "python shuf.py [option]… [file] or \n       python shuf -e [option]… [arg]… \n" + \
+                "       *** [option] only include -r, -n, - \n" + \
+                "Write a random permutation of the input lines to standard output.\n\n" +\
+                "With no file, or when file is -, read standard input."
+
+    # Blank STDIN Check
+    rawinput = sys.argv[1:]
+    if(len(rawinput) == 0):
+        try:
+            word_list = list()
+            text = input()
+            word_list.append(str(text))
+            while(len(text) >= 0):
+                text = input()
+                word_list.append(str(text))
+        except EOFError:
+            random.shuffle(word_list)
+            for x in range(len(word_list)):
+                sys.stdout.write(str(word_list[x]) + "\n")
+            exit(0)
+    elif(len(rawinput) > 0):
+        try:
+            f = open(rawinput[0], 'r')
+            lines = f.readlines()
+            f.close()
+
+            for index in range(len(lines)):
+                sys.stdout.write(random.choice(lines))
+            exit(0)
+        except IOError:
+            pass
+
+    # Main Arguments
+    parser = parser = ArgumentParser(usage=usage_msg,
+                                     add_help=False)
+
+    parser.add_argument("-e", "--echo", nargs ="*",
+                        dest="word_list",
+                        help="Treat each command-line operand as an input line.")
+    parser.add_argument("-n", "--head-count",
+                        action="store", nargs="*",
+                        dest="numlines",
+                        help="Output at most count lines. By default, all input lines are output.")
+    parser.add_argument("-r", "--repeat", 
+                        action="store", nargs="*",
+                        dest="repeater",
+                        help="Repeat output values, that is, select with replacement.")
+
+    # Combo Arguments
+    parser.add_argument("-rn", 
+                        action="store", nargs="*",
+                        dest="rn_alt", help=argparse.SUPPRESS)
+    parser.add_argument("-er", "-re",
+                        action="store", nargs="*",
+                        dest="er_alt", help=argparse.SUPPRESS)
+
+    # Help / STDIN
+    parser.add_argument("--help", 
+                        action="help", help=argparse.SUPPRESS)
+    parser.add_argument("-", dest="stdinput", action="store_true",
+                        help="Call standard input.")
+    
+    args = parser.parse_args(sys.argv[1:])
+    
+    # Check Set Arguments
+    echo = False
+    num = False
+    repeat = False
+    
+    if(args.word_list is not None):
+        echo = True
+    if(args.numlines is not None):
+        num = True
+    if(args.repeater is not None):
+        repeat = True
+
+    if(args.rn_alt is not None):
+        repeat = True
+        num = True
+        args.numlines = args.rn_alt
+        args.repeater = []
+    if(args.er_alt is not None):
+        echo = True
+        repeat = True
+        args.word_list = args.er_alt
+
+    # -r and -e and -n
+    if(repeat and echo and num):
+        numrepeat = int(args.numlines[0])
+        word_list = args.word_list
+
+        if(len(args.numlines) > 1):
+            for i in range(len(args.numlines)):
+                if(i > 0):
+                    word_list.append(args.numlines[i])
+
+        if(args.repeater is not None):
+            if(len(args.repeater) > 0):
+                for i in range(len(args.repeater)):
+                    word_list.append(args.repeater[i])
+
+        try:
+            for x in range(numrepeat):
+                sys.stdout.write(str(random.choice(word_list)) + "\n")
+        except Exception:
+            parser.error(Exception)
+            
+    # -e and -n
+    elif(echo and num):
+        numlines = int(args.numlines[0])
+        word_list = args.word_list
+
+        if(len(args.numlines) > 1):
+            for i in range(len(args.numlines)):
+                if(i > 0):
+                    word_list.append(args.numlines[i])
+                
+        try:
+            length = len(word_list)
+            if(numlines < length):
+                length = numlines
+
+            random.shuffle(word_list)
+            for i in range(length):
+                sys.stdout.write(str(word_list[i]) + "\n")
+        except Exception:
+            parser.error(Exception)
+            
+    # -e and -r
+    elif(echo and repeat):
+        word_list = args.word_list
+
+        if(args.repeater is not None):
+            if(len(args.repeater) > 0):
+                for i in range(len(args.repeater)):
+                    word_list.append(args.repeater[i])
+
+        length = len(word_list)
+
+        if((args.repeater is None) and (len(args.word_list) == 0)):
+           sys.stdout.write("shuf.py: no lines to repeat\n")
+           exit(0)
+
+        try:
+            while True:
+                for x in range(length):
+                    sys.stdout.write(str(random.choice(word_list)) + "\n")
+        except KeyboardInterrupt:
+                sys.stdout.write("\n")
+                exit(0)
+            
+    # -n and -r
+    elif(num and repeat):
+        numlines = int(args.numlines[0])
+
+        try:
+           if(len(args.numlines) > 1):
+              input_file = str(args.numlines[1])
+              fileShuffle(input_file, numlines)
+           elif(len(args.repeater) > 0):
+              input_file = str(args.repeater[0])
+              fileShuffle(input_file, numlines)  
+           elif(len(args.repeater) == 0):
+              stdinput(numlines)
+        except KeyboardInterrupt:
+                sys.stdout.write("\n")
+                exit(0)
+        
+    # -n
+    elif(num):
+        numlines = int(args.numlines[0])
+        if(len(args.numlines) > 1):
+           fileShuffle(str(args.numlines[1]), numlines)
+        else:
+           try:
+              stdinput(numlines)
+           except KeyboardInterrupt:
+              sys.stdout.write("\n")
+              exit(0)
+   
+    # -e
+    elif(echo):
+        word_list = args.word_list
+        if(args.stdinput):
+           args.word_list.append("-")
+        random.shuffle(word_list)
+        
+        try:
+            for x in range(len(word_list)):
+                sys.stdout.write(str(word_list[x]) + "\n")
+        except Exception:
+            parser.error(Exception)
+            
+    # -r
+    elif(repeat):
+        if(len(args.repeater) > 0):
+            f = open(args.repeater[0], 'r')
+            lines = f.readlines()
+            f.close()
+            
+            try:
+                while True:
+                    sys.stdout.write(random.choice(lines))
+            except KeyboardInterrupt:
+                sys.stdout.write("\n")
+                exit(0)
+        else:
+            word_list = list()
+            
+            try:
+                text = raw_input()
+                word_list.append(str(text))
+                while(len(text) >= 0):
+                    text = input()
+                    word_list.append(str(text))
+            except EOFError:
+                try:
+                    while True:
+                        sys.stdout.write(random.choice(word_list) + "\n")
+                except KeyboardInterrupt:
+                    sys.stdout.write("\n")
+                    exit(0)
+            
+    # -
+    elif(args.stdinput):
+        try:
+            word_list = list()
+            text = input()
+            word_list.append(str(text))
+            while(len(text) >= 0):
+                text = input()
+                word_list.append(str(text))
+        except EOFError:
+            random.shuffle(word_list)
+            for x in range(len(word_list)):
+                sys.stdout.write(str(word_list[x]) + "\n")
+            exit(0)
+
+    else:
+        parser.error("Invalid Arguments.")
+        
+if __name__ == "__main__":
+    main()

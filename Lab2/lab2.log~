@@ -1,0 +1,149 @@
+NAME: Animesh Mangu
+UID: 804-771-005
+TA: Guangyu Zhou
+
+Assignment 2 Log: Shell Scripting
+
+The first thing I did was change my locale to the correct
+standard C locale using the command LC_ALL='C'. Next, I
+extracted the words file from the /usr/share/ dict directory,
+ran the sort command, and placed the new file in my home/
+Documents/cs35directory. After checking the file using emacs,
+I confirmed that it was indeed the sorted version of the words
+file in dict.
+
+After sorting the dictionary file, I used the command: wget htt
+ps://web.cs.ucla.edu/classes/ spring18/cs35L/assign/assign2.html
+to download the assign2.html file into my cs35 directory. For
+clarity, I renamed the assign2.html file using the mv "assign2.html"
+"assign2.txt" command. The file is now prepared to run the following
+commands:
+
+1) tr -c 'A-Za-z' '[\n*]' < assign2.txt
+   I observed that this command repalced every nonalpha character in
+   the text file with a new line (\n).
+
+2) tr -cs 'A-Za-z' '[\n*]' < assign2.txt
+   This is essentially the same command as the first one, except that
+   -c is used instead of -cs. I noticed that the additional 's' tells
+   the process that even if there are multiple nonalpha characters in a
+   row, to only count them as one replaced newline. 
+
+3) tr -cs 'A-Za-z' '[\n*]' < assign2.txt | sort
+   This command is slightly different from the previous command since it
+   essentially sorts the output in command 2. This is from the added '|
+   sort' part to the command.
+
+4) tr -cs 'A-Za-z' '[\n*]' < assign2.txt | sort -u
+   I observed that This command differs from the previous command in
+   that the '-u' option is applied to the sort, which means that only
+   the unique words will output (each word only once). Basically, it
+   ignores repeated words from the sort output from command #3 and outputs
+   this alteration.
+  
+5) tr -cs 'A-Za-z' '[\n*]' < assign2.txt | sort -u | comm - words
+   After testing this command, I observed that this command will print
+   3 columns. The first column will only have words unique to assign2.txt,
+   the second column will only have words unique to the words file, and
+   the third column will contain words common in both the assign2.txt
+   file and the words file. 
+   
+
+6) tr -cs 'A-Za-z' '[\n*]' < assign2.txt | sort -u | comm -23 - words
+   The difference I noticed between this command the previous command is
+   that columns 2 and 3 are eliminated from the output. This is due to
+   the added '-23' part, and because of this, the only text printed is
+   column 1, which only contains the words unique to assign2.txt.
+
+After running these commands, the next step is to create our Hawaiian
+directionary. To download the webpage, we can use to command: wget
+http://mauimapp.com/moolelo/hwnwdseng.htm. Now, the necessary file is
+prepared to write the "buildwords" shell script to extract all the
+hawaiian dictionary words into the "hwords" file.
+
+Here are the script commands, specified by line:
+
+Line 7: grep -E '<td>.+<\/td>' | \
+     	Extracts all the words from the HTML file. Pipeline to next
+	command.
+
+Line 8: sed -n '1~2!p' - | \
+     	Starting at the first line, this command will delete every line
+	in increments of 2. Essentially, this removes all the English
+	words, leaving only the Hawaiian words. 
+
+Line 10: tr '[:upper:]' '[:lower:]' | \
+     	 This command converts all the  uppercase characters to lowercase
+	 characters.
+
+Line 11: tr '\`' "\'" |
+     	 This commands replaces all the "`" with "'".
+
+Line 13: sed 's/<td>//g;s/<\/td>//g' | \
+     	 This command searches for the <td> command and removes it at
+	 every instance.
+
+Line 14: sed 's/<u>//g;s/<\/u>//g' | \
+     	 This command searches for the <u> command and removes it at
+	 every instance.
+
+Line 15: sed "s/^\s*//g" | \
+     	 Removes all leading spaces in the file after running above commands.
+
+Line 17: sed -E "s/,\s|\s/\n/g" | \
+     	 Search for commas and spaces and replace them with \n, or new line.
+
+Line 18: grep "^[pk\'mnwlhaeiou]\{1,\}$" | \
+     	 This is one of the most important command lines in the script, as it
+	 removes any invalid  non-Hawaiian / English characters from the file. 
+     	 
+Line 20: sort -u
+     	 Sort the output, remove any repeats.
+
+My buildwords script initially wasn't working due to permission errors,
+so I ran chmod in order to test my code. To create the purely Hawaiian
+dictionary, I ran the command: ./buildwords < hwnwdseng.htm > hwords.
+This command allows the buildwords script to take in the HTML file
+as STDIN (standard input), and STDOUT (standard output) it to a file named
+hwords.
+
+To continue on to the next part of the lab, I downloaded the assignment
+file using using the following command: wget https://web.cs.ucla.edu/classes/
+spring18/cs35L/assign/assign2.html. After renaming the file to assign2.txt
+using the mv command, I modified the last shell command to check the spelling
+of Hawaiian rather than English:
+
+tr -cs "pk\'mnwlhaeiou" '[\n*]' | sort -u | comm -23 -hwords
+
+Additionally, to translate the STDOUT from uppercase into lowercase,
+I used the command:
+
+tr '[:upper:]' '[:lower:]' < assign2.txt
+
+After pipelining these two commands together and adding a "wc -l" at the end as
+a simple words counter (| wc), I am prepared to run the commands on the file.
+The results yield a total of 198 misspelled Hawaiian characters.
+
+I used the same command except with the "words" file, or the English
+dictionary in order to check the number of English misspelled words:
+
+tr -cs "pk\'mnwlhaeiou" '[\n*]' | sort -u | comm -23 -words | wc -l
+
+The results for this command yielded a total of 39 misspelled English words.
+
+Finally, just to check that our spell checker is actually functioning properly,
+I ran the Hawaiian spell checker on the Hawaiian dictionary itself:
+
+tr '[:upper:]' '[:lower:]' < hwords | 
+tr -cs "pk\'mnwlhaeiou" '[\n*]' | sort -u | comm -23 - hwords | wc -l
+
+The above 2 commands yield a result of 0 misspelled errors. This is exactly
+what I want, since it means my shell script is working as intended.
+
+In the last step of the laboratory, I scanned the files command to see which
+words were misspelled as English and not Hawaiian, as well as vice-versa.
+I observed that some examples of words misspelled in English but not in
+Hawaiian are: halau, lau, po, and wiki. Additionally, some examples of words
+misspelled in Hawaiian but not in English are: hap, ile, keep, and link. 
+
+And finally...THE END!

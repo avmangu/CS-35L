@@ -1,0 +1,27 @@
+NAME: Animesh Mangu
+UID: 804-771-005
+TA: Guangyu Zhou
+
+Homework 7 Questions
+
+1) Even if other teams had been observing all the bytes going across the netwok,
+the resulting network would still be secure. This is because all the bytes which
+were transferred would have been encrypted with the public key. The private key
+would never be publicly available or transferred over the network, thus
+eliminating the possibility of another team decrypting the bytes. 
+
+If the teams had been observing our keystrokes they would not be able to discern what
+the private keys are; however, they would be able to tell what messages were sent. Thus
+even if they did not know what they keys were since they could tell what the actual
+message are the network would not be secure. Finally if the teams had obtained the USB
+and we were saving all our files to the USB they would be able to obtain our private 
+key. The private key is stored in a file and thus the teams obtaining the USB would
+cause the network to no longer be secure.
+
+2) It does not verify that you created the file because it only has access to your 
+public key and the account name that is associated with it. Thus it cannot actually
+verify that the account in question created the public key. One way to fix this is
+to encrypt a message using the public key and send it to the account. If the account
+is able to use its private key to successfully decrypt the message, then we have 
+verified that it indeed created the public key. If the account is unable to decrypt, 
+then we know that it did not create the public key.

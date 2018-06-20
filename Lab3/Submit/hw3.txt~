@@ -1,0 +1,38 @@
+NAME: Animesh Mangu
+UID: 804-771-005
+TA: Guangyu Zhou
+
+Assignment 3 Homework: Modifying and Rewriting Software
+
+Question 1:
+The coreutils' ls command prepatch performs much worse than the standard ls
+command preinstalled on the linux server, but only slightly worse than the patched
+coreutils' version. In comparison to the base ls command native to the linux
+server the prepatched version is much slower, because it must be loaded and
+executed by the server instead of being simply executed as a result of being
+preinstalled as a standard by the linux server. The prepatch is also slightly
+slower than patched coreutils' ls command, because the patch removes a conditional
+statement and in the process removes a section of error checking. To verify the
+expected performance differences in the separate ls commands, I used the command
+perf stat with the arguments /bin/ls, and ls. The output of these commands was as
+expected with the best performance on the standard ls, second best on the patched
+coreutils' ls, and the worst performance by the prepatched coreutils' ls.
+
+Question 2:
+Without a substantial inspection of the inner workings of the coreutils' option
+argument parser and utilization, it is possible that modifying the specific interaction
+between the -a and -A options will have an adverse effect upon the other less
+commonly used option argument pairings. In addition, setting the last used argument
+convention, while clear in this instance, may not be intuitive to the end user
+should they not be informed explicitly.
+
+Question 3:
+Upon invoking randline.py with the empty file /dev/null, an error is outputted
+due to the script needing to read lines off of the inputted file. The error outputted
+is defined as an "out of bounds" error.
+
+Question 4:
+The randline script, when run in Python 3 invokes a IOError in line 65. This is
+most likely due to Python removing the functionality of the argument parser and
+other commands used across the Python script between the Python 2 and Python 3
+release.

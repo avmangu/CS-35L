@@ -1,0 +1,68 @@
+NAME: Animesh Mangu
+UID: 804-771-005
+TA: Guangyu Zhou
+
+Laboratory: Linux and Emacs scavenger hunt
+
+1) man-k ls
+
+2) cp: /usr/bin/cp
+   sh: /usr/bin/sh
+   Shell Commands: man -k, which cp, which sh
+
+3) . -> read / executes commands file in shell
+   : -> no effect
+   w -> shows who is logged in and what they are doing
+   [ -> evaluate conditional tests
+   X -> portable, network-transparent window system
+   Shell Commands: find /usr/bin -name '?' -executable, whatis, man -k
+
+4) The file that is actually executed is /etc/alternatives/emacs.
+   Shell Commands: cd /usr/bin/, ls -l | grep emacs
+
+5) /usr/bin/emacs version number: 24.3.1
+   plain emacs version number: 25.3.1
+   They are different programs because whenever Emacs is updated to a new version,
+   the plain emacs is upgraded, while the Emacs program in the bin stays the same.
+   This is because the old version of Emacs in the bin must remain constant in
+   order to attain minimum functionality in the case of anything. 
+
+6) g+s gives the user accessing the file group permissions.
+   o-x gives only users in the file group permission to execute. 
+
+7) find -mtime -30 -type d
+   Shell Commands: man, man mtime
+
+8) 246 symbolic links.
+   Shell Commands: ls -l | grep ^l | wc
+
+9) The oldest regular file is librom1394.so.0.3.0 (Dec 28, 2013).
+   Shell Commands: ls -lt | grep ^- 
+   
+10) The locale command gets its data from environment variables and their
+    control settings.
+    Shell Commands: man locale
+    
+11) downcase-dwim
+    downcase-region
+    downcase-word
+    Emacs Commands: C-h a
+
+12) C-M-r: isearch-backward-regexp: do incremental search backward for regular expression.
+    C-M-s: isearch-forward-regexp: do incremental search forward for regular expression.
+    C-M-t: transpose-sexps: transpose two balanced expressions.
+    C-M-u: backward-up-list: move backward out of one level of parentheses.
+    C-M-v: scroll-other-window: scroll next window upward ARG lines (full screen if no ARGS)
+    Emacs Commands: C-h b, C-x o, C-v, M-v
+
+13) C-g aborts a command that is partially typed or currently executing. 
+    Emacs Commands: C-h r, C-v, M-v
+
+14) The yank function essentially pastes the segment of text that was most
+    recently killed. It can easily be invoked using the keystroke C-y. 
+    Emacs Commands: C-h r, C-v, M-v
+
+15) The main difference is that the dired command gives us the current and parent directory,
+    while ls -l does not.
+    Shell Commands: ls -l
+    Emacs Commands: C-h b, C-s dired, C-x d

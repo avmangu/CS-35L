@@ -1,0 +1,22 @@
+# NAME: Animesh Mangu
+# UID: 804-771-005
+# TA: Guangyu Zhou
+
+#!/bin/bash
+
+grep -E '<td>.+<\/td>' | \
+sed -n '1~2!p' - | \
+    
+tr '[:upper:]' '[:lower:]' | \
+tr '\`' "\'" |
+
+sed 's/<td>//g;s/<\/td>//g' | \
+sed 's/<u>//g;s/<\/u>//g' | \
+sed "s/^\s*//g" | \
+sed -E "s/,\s|\s/\n/g" | \
+
+tr -d '[:blank:]' | \
+tr -cs "pk\'mnwlhaeiou<" '[\n*]' | \
+
+sort -u
+

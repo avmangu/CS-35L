@@ -1,0 +1,91 @@
+NAME: Animesh Mangu
+UID: 804-771-005
+TA: Guangyu Zhou
+
+Assignment 9 Homework: Verifying and Publishing a Backported Change
+
+The first step is to get the Diffutils repository in git format. We can do this in the
+linux server by first creating a new directory gitroot, and then running the command
+git clone https://git.savannah.gnu.org/git/diffutils.git within the directory. This
+creates a new directory, diffutils, which contains the Diffutils repository. We then
+change into this directory in order to fulfill the next steps.
+
+Next, I proceeded to check out version 3.0 of Diffutils from your repository,
+into a new branch named “quote”, and install the change into the new branch,
+by running the commands: 
+
+$ git checkout -b quote v3.0
+$ patch -p1<quote-3.0-patch.txt
+
+Next, I learned how to use the Emacs function add-change-log-entry-other-window
+(C-x 4 a) and used this Emacs function to create an appropriate ChangeLog entry
+for patch. The content of the text entered into the scratch buffer was:
+
+*maint: quote 'like this' or "like this", not `like this' for diffutils v3.0
+* This is in response to a recent change in the GNU coding standards, which now
+* suggest quoting 'like this' or "like this", instead of `like this' or ``like
+* this''. Comments are unchanged, only the outputs are changed. 
+* src/cmp.c (try_help, specify_ignore_initial, usage, main):
+* src/diff.c (main, try_help, option_help_msgid, specify_value)
+(compare_files):
+* src/diff3.c (main, try_help, option_help_msgid, usage)
+(read_diff):
+* src/dir.c (compare_names):
+* src/sdiff.c (try_help, usage, check_child_status, main):
+* src/ifdef.c (format_group):
+* src/util.c (finish_output):
+Quote 'like this' in output.
+
+Once this text was entered into the Emacs scratch buffer, I committed committed
+my changes to the new branch, using the ChangeLog entry as the commit message
+with the command:
+
+$ git commit -a -e -F ChangeLog
+
+Next, I generated the patch formatted-patch.txt which would work without
+having to fix things by hand afterwards using the command:
+
+$ git format-patch -1 HEAD --stdout > formatted-patch.txt
+
+Once the formatted-patch.txt file was acquired, I used FileZilla to move the
+file to my computer and emailed it to my partner, Keegan Fowler, to use. He sent
+me his patch file, formatted-patch-keegan.txt, and I copied it onto my linux
+server. After creating a branch for him using the command:
+
+$ git checkout -b keegan v3.0
+
+I applied his patch using the command:
+
+$ git am formatted-patch-partner.txt
+
+Everything ran perfectly, so I could proceed to build the program using the
+commands from README-hacking:
+
+$ ./bootstrap
+$ ./configure
+$ make
+$ make check
+
+Once again, everything ran smoothly and the the tests in the make check were all
+passed as expected. I checkout out of his repository and typed the command:
+
+$ make dist
+
+and changed into the created diffutils-3.0.1-d696 directory. I inspected his
+ChangeLog file, and everything seemed good.
+
+Finally, in the last part of the homework, I cloned GNU Emacs git repository's
+master branch using the command:
+
+$ git clone ~eggert/src/gnu/emacs
+
+I logged out of my current SSH session, re-logged in with the -X command, and ran
+the gitk command. A window of the gitk program opened, and I found the newest
+merge that is not newer than 2015-01-25 (a one made on 2015-01-25). Lastly, I
+took a screenshot gitk-screenshot.png of my view of the mergepoint, and in an
+ASCII text file gitk-description.txt I briefly described the roles of subwindows
+in the screenshot.
+
+The END!
+
+

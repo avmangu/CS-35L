@@ -1,0 +1,50 @@
+# NAME: Animesh Mangu
+# UID: 804-771-005
+# TA: Guangyu Zhou
+
+#!/bin/bash
+
+dir=$1
+SYSTEM=`ls -a $dir | LC_ALL=C sort`
+declare -a FILES
+
+let hardlink=0
+let count=0
+
+for FILE in $SYSTEM
+do
+	let hardlink=0
+
+	if [ ! -r "$dir/$FILE" ]
+    	then
+		echo "$dir/$FILE has no read permissions."
+    	fi
+
+	if [[ -r "$dir/$FILE" && ! -L "$dir/$FILE" ]]
+	then
+		if [ -f "$dir/$FILE" ]
+		then
+			echo "$dir/$FILE is a regular file."
+			for ((c=count-1; c!=-1; c--))
+			do
+				cmp "$dir/$FILE" "${FILES[$c]}" -s
+				if [ $? == 0 ]
+				then
+					rm "$dir/$FILE"
+					ln ${FILES[$c]} "$dir/$FILE"
+					let hardlink=1
+					break
+				fi
+			done
+			
+			if [ $hardlink == 0 ]
+			then
+				FILES[$count]="$dir/$FILE"
+				let count++
+			fi
+		
+		else
+			echo "$dir/$FILE is not a regular file."
+		fi
+	fi
+done

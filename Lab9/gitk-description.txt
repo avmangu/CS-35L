@@ -1,0 +1,18 @@
+NAME: Animesh Mangu
+UID: 804-771-005
+TA: Guangyu Zhou
+
+gitk-screenshot.png Subwindow Role Description
+
+TOP:
+The window on the top left depicts a simple tree of all the commits made. On the
+immediate right is a list of all the commits made over the past several
+years. Each merge date is accompanied by a name and email address on the
+individual who made the commit. 
+
+BOTTOM:
+The window on the bottom left depicts all the commit information for the selected
+commit, as well the line modifications, author details, date, and other
+comments. Lastly the window on the bottom right displays various views of what
+was modified in the patch. In essence, the files related to the commit selected
+in the bottom left window are listed. 

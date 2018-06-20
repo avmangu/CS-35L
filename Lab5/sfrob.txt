@@ -1,0 +1,79 @@
+NAME: Animesh Mangu
+UID: 804-771-005
+TA: Guangyu Zhou
+
+Homework 5 Performance Comparison: Encrypted Sort Revisited
+
+sfrob vs. sfrobu:
+
+      test1.txt (9 lines):
+	sfrob: real	0m0.007s
+	       user	0m0.009s
+	       sys	0m0.000s
+	       
+	sfrobu: real	0m0.011s
+		user	0m0.013s
+		sys	0m0.005s
+
+      test2.txt (62 lines):
+	sfrob: real	0m0.027s
+	       user	0m0.022s
+	       sys	0m0.006s
+	       
+	sfrobu: real	0m0.072s
+		user	0m0.039s
+		sys	0m0.034s
+
+      test3.txt (366 lines):
+	sfrob: real	0m0.190s
+	       user	0m0.087s
+	       sys	0m0.043s
+	       
+	sfrobu: real	0m0.209s
+		user	0m0.083s
+		sys	0m0.170s
+
+From these results, in the case of all 3 input files, we can clearly
+see that sfrob is much faster than sfrobu. To see the number of
+comparisons being done, we can simply use the strace command. As a
+function of the input lines, the comparisons for sfrob seem to be:
+f(i) = i. However, the comparisons as a function of the input in lines
+in sfrobu seem to be about: f(i) = 614i. i represents ihe input lines,
+while the f(i) represents the number of comparisons. 
+
+sfrob vs sfrobu vs sfrobs vs sfrobu -f vs sfrobs -f:
+
+      test3.txt (366 lines):
+	sfrob: real	0m0.190s
+	       user	0m0.087s
+	       sys	0m0.043s
+	       
+	sfrobu: real	0m0.209s
+		user	0m0.083s
+		sys	0m0.170s
+
+	sfrobs: real	0m0.204s
+		user	0m0.118s
+		sys	0m0.039s
+
+	sfrobu -f: real	0m0.209s
+	       	   user	0m0.099s
+		   sys	0m0.151s
+
+	sfrobs -f: real	0m0.195s
+	       	   user	0m0.141s
+		   sys	0m0.021s
+
+From these results, we can see that sfrob is the fastest, by a small
+margin over sfrobs -f. Here are the rankings by speed, from fastest
+(1), to slowest (5):
+
+1. sfrob
+2. sfrobs -f
+3. sfrobs
+4. sfrobu
+5. sfrobu -f
+
+We can also see that sfrobu was clearly the slowest, and using the -f
+command for case sensitivity made no real difference, as the
+performance times remained essentially identical. 

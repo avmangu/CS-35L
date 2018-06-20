@@ -1,0 +1,206 @@
+NAME: Animesh Mangu
+UID: 804-771-005
+TA: Guangyu Zhou
+
+Laboratory 9 Log: Managing a Backported Change
+
+The first thing I did was download a copy of the Diffutils repository, in Git
+format, from its main Savannah repository using the command:
+
+$ git clone https://git.savannah.gnu.org/git/diffutils.git
+
+Next, cd'd into the diffutils directory and ran the commands:
+
+$ git log > git-log.txt
+$ git tag > git-tags.txt
+
+to get a log of changes to the Diffutils master branch, and generate a list of
+tags used for Diffutils, respectively. Once this was completed, I found the commit
+entitled “maint: quote 'like this' or "like this", not `like this'”, and
+generated a patch for that commit, putting it into the file quote-patch.txt. The
+commit had a hash of: 62ca21c8c1a5aa3488589dcb191a4ef04ae9ed4f, so I ran the
+command:
+
+$ git show 62ca21c8c1a5aa3488589dcb191a4ef04ae9ed4f > quote-patch.txt
+
+to generate a patch for the file named "quote-patch.txt". Next, I checked out
+version 3.0 of Diffutils from my repository using the command:
+
+$ git checkout v3.0
+
+and applied the created patch using the command:
+
+$ patch -p1 < quote-patch.txt
+
+Many times it couldn't figure out which file to patch, so I just skipped past
+these with "Enter" and "y". To get an overview of what occured, I type the command:
+
+$ git status
+
+Which outputted:
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+	modified:   NEWS
+	modified:   README
+	modified:   TODO
+	modified:   doc/diagmeet.note
+	modified:   ms/config.bat
+	modified:   ms/config.site
+	modified:   po/en.po
+	modified:   src/analyze.c
+	modified:   src/cmp.c
+	modified:   src/context.c
+	modified:   src/diff.c
+	modified:   src/diff.h
+	modified:   src/diff3.c
+	modified:   src/dir.c
+	modified:   src/ifdef.c
+	modified:   src/io.c
+	modified:   src/sdiff.c
+	modified:   src/side.c
+	modified:   src/system.h
+	modified:   src/util.c
+	modified:   tests/help-version
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+	NEWS.orig
+	README-hacking.orig
+	README-hacking.rej
+	README.orig
+	README.rej
+	cfg.mk.orig
+	cfg.mk.rej
+	git-log.txt
+	git-tags.txt
+	ms/config.site.orig
+	quote-patch.txt
+	src/cmp.c.orig
+	src/context.c.orig
+	src/diff.c.orig
+	src/diff.c.rej
+	src/diff.h.orig
+	src/diff3.c.orig
+	src/diff3.c.rej
+	src/dir.c.orig
+	src/sdiff.c.orig
+	src/system.h.orig
+	src/util.c.orig
+	tests/help-version.orig
+
+After familiarizing myself with the Emacs functions vc-diff and vc-revert, I
+moved onto the next step of the Lab. This step required me to revert all the
+changes to files other than .c files, since I only want the changes to the .c
+files. The file I had to run through were:
+
+NEWS
+README
+TODO
+doc/diagmeet.note
+ms/config.bat
+ms/config.site
+po/en.po
+src/diff.h
+src/system.h
+tests/help-version
+
+to revert each of the above files, I opened each one in Emacs, and did the
+keyboard-shortcuts C-x v = and C-x v u to do vc-revert to revert all
+changes to the files. Once this was completed, I could move on to undo all the
+changes to .c files (other than changes to character string constants), as the
+character-string changes are the only changes that I actually wanted. In other
+words, I needed to modify all the parts of the code that didn't involved
+modifying the output (basically comments only). The .c files I needed to scan
+through and revert were:
+
+src/analyze.c
+src/cmp.c
+src/context.c
+src/diff.c
+src/diff3.c
+src/dir.c
+src/ifdef.c
+src/io.c
+src/sdiff.c
+src/side.c
+src/util.c
+
+to revert certain parts of each of the above files, I opened each one in Emacs,
+and performed the keyboard shortcut C-x v = to open the buffer containing all
+the changes to the file with vc-diff. I scanned through all the potential
+changes in the buffer for each file, and only undid the required,
+non-character-string-constant sections of the code. To revert specified
+portions, I clicked on the header change and used the keyboard-shortcut C-u C-c
+C-a. Once all the modifications were made to the .c files, I again used Emacs to
+examine the files src/diff.c.rej and src/diff3.c.rej carefully. I opened diff.c
+and diff3.c alongside each of the .c.rej files and completed all (total 4)
+of the changes by hand.
+
+Once all the file modifications were made, I moved my quote-patch.txt file
+outside the directory (for submission), and removed all untracked files that git
+status warned me about using the command:
+
+$ git clean -f
+
+After the untracked files were removed, I ran git status, which returned about a
+half-dozen files which I had made changes to. Next, in order to get the changes
+to the repository and save it as a patch, I ran the command: 
+
+$ git diff > quote-3.0-patch.txt
+
+Once again, I moved this patch file outside the directory (for submission), and
+checked the README-hacking to build the resulting modified version of
+Diffutils. The commands I needed to run (in succession) were:
+
+$ ./bootstrap
+$ ./configure
+$ make
+$ make check
+
+I skipped the part about CVS since it is obsolescent, and didn't need to apply a
+patch after running ./bootstrap. This was because I was on lnxsrv05, and the GNU
+C Library was running on 2.12 version (before the required 2.16
+library). Everything built successfully, and I tested the new version of
+diffutils with the commands:
+
+$ ./src/diff . -
+$ ./src/diff --help
+
+Since there were no ` characters outputted, and only ' characters, I could
+confirm that my patch worked! To do a sanity test with my patch and compare it
+to the original source code, I ran the following several commands:
+
+$ mkdir diffutils-3.0
+$ mkdir diffutils-3.0-patch
+$ cp src/*.c --target-directory=diffutils-3.0-patch
+$ git checkout v3.0 src
+$ cp src/*.c --target-directory=diffutils-3.0
+$ ./src/diff -pru diffutils-3.0 diffutils-3.0-patch > quote-3.0-test.txt
+
+which put the former source code into a directory diffutils-3.0 and the latter source
+code into a directory diffutils-3.0-patch. Next, to get the original source
+files, I copied them into diffutils-3.0 and compared the files to generate a
+file called quote-3.0-test.txt. Finally, to compare the quote-3.0-patch.txt and
+quote-3.0-test.txt files, I used the command:
+
+$ ./src/diff -u quote-3.0-patch.txt quote-3.0-test.txt > difference.txt
+
+After opening the difference.txt file to see all the differences, I noticed that
+the files were not identical. However, they are innocuous, mostly due to
+difference in line numbers and other small factors. The real changes (conversion
+from ` to ') were all successfully implemented.
+
+Lastly, since the log and tag files were deleted during the removal of the
+untracked files, I ran the commands:
+
+$ git log > git-log.txt
+$ git tag > git-tags.txt
+
+one more time to get the log of changes and list of tags. Both files were copied
+outside the working diffutils directory. 
+
+The END!

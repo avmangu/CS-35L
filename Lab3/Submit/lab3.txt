@@ -1,0 +1,37 @@
+NAME: Animesh Mangu
+UID: 804-771-005
+TA: Guangyu Zhou
+
+Laboratory 3 Log: Installing a Small Change to a Big Package
+
+To begin this lab, I downloaded the coreutils package off of the assignment
+spec into a temporary Documents directory. Following this, I untarred the
+file coreutils-7.6-tar.gz using the "tar -xzvf" command. Then, as specified
+by the INSTALL file, I created a new directory titled CUINS to house the
+install files created by the following installation.
+
+The installation process included using the command "./configure --prefix=/w/
+home.13/ee/ugrad/animesh/Documents/CUINS" to install the base coreutils files,
+followed by the commands "make" and "make install" to properly implement
+each command in the CUINS folder. This completed the basic installation
+process of coreutils.
+
+Following this installation, I verified that the bug presented in the
+assignment existed in the current version of coreutils using the command
+"/bin/ls -a -A". As expected, the command outputted the existing files and
+included the bugged ". .."  Seeing as the bug does exist in the coreutils
+package I began patching the bug using the patch notes found in the spec.
+
+To begin this process I used the command vim pfile to create and open a file
+name pfile in vim. In this file I pasted and saved the patch notes given by
+the assignment.  I then used the command "patch -p1 < pfile" to alter the
+contents of the installed coreutils files in accordance with those listed
+in the patch notes. The news file outputted a hunk error but upon inspection
+of the nested file was changed properly.
+
+To verify that the entire patch went through correctly I used the command
+"/bin/ls -a -A" within the CUINS directory and got the desired ls output
+excluding the ". ..". Once that was done, all the specified tasks had been
+completed.
+
+The END!
